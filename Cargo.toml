@@ -1,0 +1,21 @@
+[package]
+
+name = "skip-list"
+version = "0.0.1"
+authors = ["Duane Bailey <bailey.d.r@gmail.com>"]
+
+[lib]
+
+name = "skip_list"
+path = "src/skip_list.rs"
+
+[dependencies]
+
+rand = "0.1.3"
+
+# The testing profile, used for `cargo test`
+[profile.test]
+opt-level = 2
+debug = true
+rpath = false
+lto = false
