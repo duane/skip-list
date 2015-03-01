@@ -2,7 +2,12 @@
 
 name = "skip-list"
 version = "0.0.1"
+license =  "Apache-2.0"
 authors = ["Duane Bailey <bailey.d.r@gmail.com>"]
+keywords = ["skip-list", "skiplist"]
+readme = "README.md"
+repository = "http://github.com/duane/skip-list"
+description = "An implementation of a skip-list map."
 
 [lib]
 
@@ -15,6 +20,7 @@ rand = "0.1.3"
 
 # The testing profile, used for `cargo test`
 [profile.test]
+
 opt-level = 2
 debug = true
 rpath = false
