@@ -10,7 +10,8 @@
 
 #[cfg(test)]
 mod test {
-  use list::*;
+  extern crate skip_list;
+  use self::skip_list::list::*;
 
   #[test]
   fn basic_test_large() {
@@ -62,11 +63,11 @@ mod test {
     let size = 10000usize;
 
     // Forwards
-    let mut map: SkipList<usize, usize> = range(0, size).map(|i| (i, i)).collect();
+    let mut map: SkipList<usize, usize> = (0..size).map(|i| (i, i)).collect();
 
     {
         let mut iter = map.iter();
-        for i in range(0, size) {
+        for i in 0..size {
             assert_eq!(iter.size_hint(), (size - i, Some(size - i)));
             assert_eq!(iter.next().unwrap(), (&i, &i));
         }
@@ -76,7 +77,7 @@ mod test {
 
     {
         let mut iter = map.iter_mut();
-        for i in range(0, size) {
+        for i in 0..size {
             assert_eq!(iter.size_hint(), (size - i, Some(size - i)));
             assert_eq!(iter.next().unwrap(), (&i, &mut (i + 0)));
         }
@@ -86,7 +87,7 @@ mod test {
 
     {
         let mut iter = map.into_iter();
-        for i in range(0, size) {
+        for i in 0..size {
             assert_eq!(iter.size_hint(), (size - i, Some(size - i)));
             assert_eq!(iter.next().unwrap(), (i, i));
         }

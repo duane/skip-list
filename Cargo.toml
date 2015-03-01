@@ -12,7 +12,6 @@ description = "An implementation of a skip-list map."
 [lib]
 
 name = "skip_list"
-path = "src/skip_list.rs"
 
 [dependencies]
 
