@@ -149,11 +149,28 @@ impl<K: Ord, V> SkipList<K, V> {
   /// Makes a new, empty SkipList with sensible defaults.
   ///
   /// The new list has p = 0.5, max_level = std::usize::MAX.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// use skip_list::list::SkipList;
+  ///
+  /// let mut a = SkipList::<&str, usize>::new();
+  /// assert!(a.is_empty());
+  /// ```
   pub fn new() -> SkipList<K, V> {
     SkipList::<K, V>::new_skip_list(MAX, DEFAULT_P)
   }
 
   /// Makes a new, empty SkipList with specified p and max_level.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// use skip_list::list::SkipList;
+  ///
+  /// let mut a = SkipList::<&str, usize>::new_skip_list(32, 0.25);
+  /// ```
   pub fn new_skip_list(max_level: usize, p: f32) -> SkipList<K, V> {
     SkipList {
       rng: StdRng::new().unwrap(),
@@ -214,6 +231,19 @@ impl<K: Ord, V> SkipList<K, V> {
   }
 
   /// Insert a new value into the skip list.
+  ///
+  /// ```
+  /// use skip_list::list::SkipList;
+  ///
+  /// let mut a = SkipList::<&str, usize>::new();
+  /// a.insert("foo", 0);
+  /// 
+  /// assert!(a.get(&"foo") == Some(&0));
+  ///
+  /// a.remove(&"foo");
+  /// 
+  /// assert!(a.get(&"foo") == None);
+  /// ```
   pub fn insert(&mut self, key: K, value: V) -> Option<V> {
     unsafe {
       match self.search(&key) {
@@ -265,7 +295,20 @@ impl<K: Ord, V> SkipList<K, V> {
     }
   }
 
-  /// Fetch the value from the skip list.
+  /// Fetch the value from the skip list indexed by key. Return none if the key is not in the skip list.
+  ///
+  /// ```
+  /// use skip_list::list::SkipList;
+  ///
+  /// let mut a = SkipList::<&str, usize>::new();
+  /// a.insert("foo", 0);
+  /// 
+  /// assert!(a.get(&"foo") == Some(&0));
+  ///
+  /// a.remove(&"foo");
+  /// 
+  /// assert!(a.get(&"foo") == None);
+  /// ```
   pub fn get<'s>(&'s mut self, key: &K) -> Option<&'s V> {
     unsafe {
       match self.search(key) {
@@ -276,6 +319,21 @@ impl<K: Ord, V> SkipList<K, V> {
   }
 
   /// Delete the value from the skip list.
+  ///
+  /// ```
+  /// use skip_list::list::SkipList;
+  ///
+  /// let mut a = SkipList::<&str, usize>::new();
+  /// a.insert("foo", 0);
+  /// 
+  /// assert!(a.get(&"foo") == Some(&0));
+  /// assert!(a.len() == 1);
+  ///
+  /// a.remove(&"foo");
+  /// 
+  /// assert!(a.get(&"foo") == None);
+  /// assert!(a.len() == 0);
+  /// ```
   pub fn remove(&mut self, key: &K) -> Option<V> {
     unsafe {
       match self.search(key) {
@@ -302,6 +360,17 @@ impl<K: Ord, V> SkipList<K, V> {
   }
 
   /// Acquire an iterator on this skip list.
+  ///
+  /// ```
+  /// use skip_list::list::SkipList;
+  ///
+  /// let mut a = SkipList::<&str, usize>::new();
+  /// a.insert("foo", 0);
+  /// a.insert("bar", 1);
+  /// 
+  /// let vals: Vec<usize> = a.iter().map(|(k, v)| *v).collect();
+  /// assert!(&vals == &[1, 0]);
+  /// ```
   pub fn iter<'s>(&'s mut self) -> Iter<K, V> {
     Iter {
       inner: NodePtrIterator {
@@ -312,6 +381,23 @@ impl<K: Ord, V> SkipList<K, V> {
   }
 
   /// Acquire a mutable iterator on this skip list.
+  ///
+  /// ```
+  /// use skip_list::list::SkipList;
+  ///
+  /// let mut a = SkipList::<&str, usize>::new();
+  /// a.insert("foo", 0);
+  /// a.insert("bar", 1);
+  /// 
+  /// for (key, value) in a.iter_mut() {
+  ///   if (key == &"foo") {
+  ///     *value += 10;
+  ///   }
+  /// }
+  /// assert!(a.get(&"foo") == Some(&10));
+  /// assert!(a.get(&"bar") == Some(&1));
+  ///
+  /// ```
   pub fn iter_mut<'s>(&'s mut self) -> MutIter<K, V> {
     MutIter {
       inner: NodePtrIterator {
@@ -322,6 +408,20 @@ impl<K: Ord, V> SkipList<K, V> {
   }
 
   /// Acquire a copying iterator on this skip list.
+  ///
+  /// This is useful for copying the skip list into some other format.
+  ///
+  /// ```
+  /// use skip_list::list::SkipList;
+  /// use std::collections::BTreeMap;
+  ///
+  /// let mut a = SkipList::<&str, usize>::new();
+  /// a.insert("foo", 0);
+  /// a.insert("bar", 1);
+  /// let b: BTreeMap<&str, usize> = a.into_iter().collect();
+  /// assert!(b.get("foo") == Some(&0));
+  /// assert!(b.get("bar") == Some(&1));
+  /// ```
   pub fn into_iter<'s>(&'s mut self) -> CopyIter<K, V> {
     CopyIter {
       inner: NodePtrIterator {
@@ -331,13 +431,52 @@ impl<K: Ord, V> SkipList<K, V> {
     }
   }
 
+  /// Returns true iff the skip list is empty.
+  ///
+  /// # Example
+  ///
+  /// ```
+  /// use skip_list::list::SkipList;
+  ///
+  /// let mut a = SkipList::<&str, usize>::new();
+  /// assert!(a.is_empty());
+  /// a.insert("foo", 0);
+  /// assert!(!a.is_empty());
+  /// ```
+  pub fn is_empty(&self) -> bool {
+    self.size == 0
+  }
+
   /// The number of items in the skip list.
+  ///
+  /// # Example
+  ///
+  /// ```
+  /// use skip_list::list::SkipList;
+  ///
+  /// let mut a = SkipList::<&str, usize>::new();
+  /// assert!(a.len() == 0);
+  /// a.insert("foo", 0);
+  /// a.insert("bar", 1);
+  /// assert!(a.len() == 2);
+  /// ```
   pub fn len(&self) -> usize {
     self.size
   }
 
   /// Returns true iff the skip list contains `key`.
-  fn contains(&mut self, key: K) -> bool {
+  ///
+  /// # Example
+  ///
+  /// ```
+  /// use skip_list::list::SkipList;
+  ///
+  /// let mut a = SkipList::<&str, usize>::new();
+  /// assert!(!a.contains("foo"));
+  /// a.insert("foo", 0);
+  /// assert!(a.contains("foo"));
+  /// ```
+  pub fn contains(&mut self, key: K) -> bool {
     unsafe {
       match self.search(&key) {
         (_, node) => !node.is_null()
@@ -347,19 +486,19 @@ impl<K: Ord, V> SkipList<K, V> {
 }
 
 impl<K: Ord, V> FromIterator<(K, V)> for SkipList<K, V> {
-    fn from_iter<T: IntoIterator<Item=(K, V)>>(iter: T) -> SkipList<K, V> {
-        let mut map = SkipList::new();
-        map.extend(iter);
-        map
-    }
+  fn from_iter<T: IntoIterator<Item=(K, V)>>(iter: T) -> SkipList<K, V> {
+    let mut map = SkipList::new();
+    map.extend(iter);
+    map
+  }
 }
 
 impl<K: Ord, V> Extend<(K, V)> for SkipList<K, V> {
-    fn extend<T: IntoIterator<Item=(K, V)>>(&mut self, iter: T) {
-        for (k, v) in iter {
-            self.insert(k, v);
-        }
+  fn extend<T: IntoIterator<Item=(K, V)>>(&mut self, iter: T) {
+    for (k, v) in iter {
+      self.insert(k, v);
     }
+  }
 }
 
 }
